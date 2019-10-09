@@ -12,7 +12,7 @@ from tqdm import tqdm
 import random
 import pickle
 
-directory = 'C:/Users/jerom/OneDrive/Documents/machinelearning/sentdextut/TensorFlow/classifydogcat/data sets/PetImages'
+directory = 'TensorFlow/classifydogcat/data sets/PetImages'
 labels = ['Dog', 'Cat']
 
 # creating training data
