@@ -240,3 +240,62 @@ df_test_combined = pd.concat([df_test_keep_stand, df_test_encoded], axis=1)
 X_test = df_test_combined
 
 nans_in_data_frame(X_test)  # check to see if there are any null values in the data frame
+
+########################################################################################################################
+# time to start some modeling
+
+# building before defining the algorithms
+build_folds = get_folds(10, df_train_combined_cropped)  # creating folds for the cross validation
+df_folds = build_folds[0]
+K = build_folds[1]
+
+### Defining algos
+algo_list = []
+
+algo = xgb.XGBClassifier()
+algo_list.append(algo)
+
+algo = LogisticRegression()
+algo_list.append(algo)
+
+algo = RandomForestClassifier()
+algo_list.append(algo)
+
+algo = SVC(probability=True)
+algo_list.append(algo)
+
+algo = KNeighborsClassifier()
+algo_list.append(algo)
+
+algo = DecisionTreeClassifier()
+algo_list.append(algo)
+
+algo = GaussianNB()
+algo_list.append(algo)
+
+algo = GradientBoostingClassifier()
+algo_list.append(algo)
+
+algo = SGDClassifier(loss='log')
+algo_list.append(algo)
+
+results_table = pd.DataFrame(np.empty([len(algo_list), 10]) * pd.np.nan).astype(object)
+results_table.columns = ['model', 'acc', 'prec', 'sens', 'spec', 'f1', 'loss', 'run time', 'AUC', 'selected params']
+
+j = 0
+for j in range(len(algo_list)):
+    algo_fit_output(algo_list[j], K, df_folds, results_table, X_pseudo_test, y_pseudo_test, j)
+
+'''        
+>>>print(results_table)
+                                               model       acc      prec      sens      spec        f1                                               loss     run time       AUC selected params
+0  XGBClassifier(base_score=0.5, booster='gbtree'...   0.82933  0.837945   0.69281  0.915464  0.758497  [0.5424984263468392, 0.4133473934393518, 0.474...     0.140892  0.856445             NaN
+1  LogisticRegression(C=1.0, class_weight=None, d...  0.797724   0.77037  0.679739  0.872165  0.722222  [0.50890546819077, 0.48840380624314456, 0.5242...   0.00211077  0.861979             NaN
+2  (DecisionTreeClassifier(class_weight=None, cri...  0.801517  0.770909   0.69281  0.870103  0.729776  [2.9666888709460024, 0.885910359574083, 2.1591...    0.0126403  0.884115             NaN
+3  SVC(C=1.0, cache_size=200, class_weight=None, ...  0.825537  0.808824  0.718954  0.892784  0.761246  [0.5202797261611216, 0.5031751932221993, 0.503...    0.0404503  0.865234             NaN
+4  KNeighborsClassifier(algorithm='auto', leaf_si...  0.778761  0.728223  0.683007  0.839175   0.70489  [3.833663247322775, 1.6743361516799644, 2.6001...   0.00143037  0.847331             NaN
+5  DecisionTreeClassifier(class_weight=None, crit...   0.77244  0.714286  0.686275  0.826804       0.7  [9.653580579584133, 7.448353894383279, 7.91352...   0.00123832  0.783854             NaN
+6       GaussianNB(priors=None, var_smoothing=1e-09)   0.79646  0.752613  0.705882  0.853608  0.728499  [0.6881874365711668, 0.738920488819651, 0.9290...  0.000213528  0.823568             NaN
+7  ([DecisionTreeRegressor(criterion='friedman_ms...  0.828066  0.829457  0.699346  0.909278  0.758865  [0.5656753944826787, 0.40087371581104425, 0.50...    0.0536729  0.865234             NaN
+8  SGDClassifier(alpha=0.0001, average=False, cla...  0.783818  0.728814  0.702614  0.835052  0.715474  [0.5681333297017231, 0.5359963581028432, 0.564...   0.00415137  0.814453             NaN
+'''
