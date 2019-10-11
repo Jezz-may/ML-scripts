@@ -299,3 +299,29 @@ for j in range(len(algo_list)):
 7  ([DecisionTreeRegressor(criterion='friedman_ms...  0.828066  0.829457  0.699346  0.909278  0.758865  [0.5656753944826787, 0.40087371581104425, 0.50...    0.0536729  0.865234             NaN
 8  SGDClassifier(alpha=0.0001, average=False, cla...  0.783818  0.728814  0.702614  0.835052  0.715474  [0.5681333297017231, 0.5359963581028432, 0.564...   0.00415137  0.814453             NaN
 '''
+
+# ###                     ####                    ########                     ####                    ####
+# model tuning grid searching through parameters 
+algo_list = []
+
+algo, grid_values = LogisticRegression, {'penalty': ['l1', 'l2'], 'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000]}
+# GridSearch to tune hyperparameters. pass those hyperparams through to the algo in cross_fold_val which may be overkill but it's the only way to use cross_fold_val and hyperparams together
+model = GridSearchCV(algo(), param_grid=grid_values)
+clf = model.fit(X_train_cropped, y_train_cropped)  # need to fit the model in order to get best_params, which we pass to cross_fold_val via algo
+# clf.best_params_, clf.cv_results_, clf.best_score_, clf.best_estimator_
+algo = algo(**clf.best_params_)
+algo_list.append(algo)
+
+results_table = pd.DataFrame(np.empty([len(algo_list), 10]) * pd.np.nan).astype(object)
+results_table.columns = ['model', 'acc', 'prec', 'sens', 'spec', 'f1', 'loss', 'run time', 'AUC', 'selected params']
+
+j = 0
+for j in range(len(algo_list)):
+    algo_fit_output(algo_list[j], K, df_folds, results_table, X_pseudo_test, y_pseudo_test, j)
+
+'''    
+results_table
+                                               model       acc     prec      sens      spec        f1                                               loss    run time       AUC selected params
+0  LogisticRegression(C=1, class_weight=None, dua...  0.797724  0.77037  0.679739  0.872165  0.722222  [0.50890546819077, 0.48840380624314456, 0.5242...  0.00179522  0.861979             NaN
+'''
+# ###                     ####                    ########                     ####                    ####
